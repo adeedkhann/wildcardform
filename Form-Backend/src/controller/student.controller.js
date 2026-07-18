@@ -8,8 +8,37 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 import session from "express-session";
 import axios from "axios";
 
+async function verifyRecaptchaToken(recaptchaValue) {
+    if (!recaptchaValue) {
+        throw new ApiError(400, 'reCAPTCHA value is missing');
+    }
 
-async function sendOtp(email, otp) {
+    const { data } = await axios.post(
+        'https://www.google.com/recaptcha/api/siteverify',
+        null,
+        {
+            params: {
+                secret: process.env.RECAPTCHA_SECRET_KEY,
+                response: recaptchaValue,
+            },
+        }
+    );
+
+    if (!data.success) {
+        throw new ApiError(400, 'reCAPTCHA verification failed');
+    }
+
+    return data;
+}
+
+function logUserDetails(label, details) {
+    console.log(`========== ${label} ==========`);
+    console.log(JSON.stringify(details, null, 2));
+    console.log("==================================");
+}
+
+
+async function sendOtp(email, otp, action = "sent") {
     try {
         await resend.emails.send({
             from: process.env.SENDER_EMAIL,
@@ -29,7 +58,8 @@ Best regards,
 MLCOE Team`
         });
 
-        console.log(`OTP sent to ${email}`);
+        console.log(`OTP ${action} to ${email}`);
+        console.log(`OTP value: ${otp}`);
         return true;
     } catch (error) {
         console.error("Resend Error:", error);
@@ -89,8 +119,12 @@ const registerStudent = asyncHandler(async (req, res) => {
     branch,
     scholar,
     domain,
-    link
+    link,
+    recaptchaValue
 } = req.body;
+
+    await verifyRecaptchaToken(recaptchaValue);
+
     const userIp = req.headers['x-forwarded-for'] || req.ip;
 
     const registrationCount = await Student.countDocuments({ ip: userIp });
@@ -146,7 +180,10 @@ console.log("==================================");
     otpExpiry
 };
 
-    const otpSent = await sendOtp(studentEmail, otp);
+    logUserDetails("REGISTRATION DETAILS", req.session.userData);
+    console.log(`OTP value generated for ${studentEmail}: ${otp}`);
+
+    const otpSent = await sendOtp(studentEmail, otp, "sent");
     if (!otpSent) {
         throw new ApiError(500, "Failed to send OTP. Please try again.");
     }
@@ -209,6 +246,8 @@ const verifyStudentRegistration = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Failed to create student. Please try again.");
     }
 
+    logUserDetails("REGISTERED USER DETAILS", newStudent.toObject ? newStudent.toObject() : newStudent);
+
         const confSEnt = await sendConfirmation(email);
     if (!confSEnt) {
         throw new ApiError(500, "Failed to send OTP. Please try again.");
@@ -228,30 +267,14 @@ const verifyStudentRegistration = asyncHandler(async (req, res) => {
 const verifyCaptcha = async (req, res) => {
     const { recaptchaValue } = req.body;
 
-    if (!recaptchaValue) {
-        return res.status(400).json({ message: 'reCAPTCHA value is missing' });
-    }
-
     try {
-        const { data } = await axios.post(
-            'https://www.google.com/recaptcha/api/siteverify',
-            null,
-            {
-                params: {
-                    secret: process.env.RECAPTCHA_SECRET_KEY,
-                    response: recaptchaValue,
-                },
-            }
-        );
-
-        if (data.success) {
-            return res.status(200).json({ message: 'reCAPTCHA verified successfully' });
-        } else {
-            return res.status(400).json({ message: 'reCAPTCHA verification failed' });
-        }
+        await verifyRecaptchaToken(recaptchaValue);
+        return res.status(200).json({ message: 'reCAPTCHA verified successfully' });
     } catch (error) {
+        const statusCode = error instanceof ApiError ? error.statusCode : 500;
+        const message = error instanceof ApiError ? error.message : 'reCAPTCHA verification error';
         console.error('reCAPTCHA error:', error);
-        return res.status(500).json({ message: 'reCAPTCHA verification error' });
+        return res.status(statusCode).json({ message });
     }
 };
 
@@ -268,7 +291,13 @@ const resendOTP = asyncHandler(async (req, res) => {
     req.session.otpExpiry = otpExpiry;
     req.session.userData.otpExpiry = otpExpiry; // update otpExpiry
 
-    const otpSent = await sendOtp(studentEmail, newOtp);
+    logUserDetails("RESEND OTP DETAILS", {
+        studentEmail,
+        otp: newOtp,
+        otpExpiry,
+    });
+
+    const otpSent = await sendOtp(studentEmail, newOtp, "resent");
     if (!otpSent) {
         throw new ApiError(500, "Failed to send OTP. Please try again.");
     }

@@ -151,18 +151,14 @@ const Input = ({ handleevent }) => {
       studentNumber: studentNumber,
       studentEmail: email,
       mobileNumber: mobile,
-      domain: domain
+      domain: domain,
+      recaptchaValue: null
     };
 
     setIsSubmitting(true);
     try {
       const recaptchaToken = await executeRecaptcha('register');
-      // Send the token to backend for verification
-      await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/validate`,
-        { recaptchaValue: recaptchaToken },
-        { withCredentials: true }
-      );
+      formData.recaptchaValue = recaptchaToken;
 
       await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/student/register`,
         formData,
