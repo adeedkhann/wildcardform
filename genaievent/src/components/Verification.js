@@ -1,12 +1,17 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Verification = ({ useremail }) => {
+  const navigate = useNavigate();
+  const hasEmail = Boolean(useremail && String(useremail).trim());
   const [otp, setOtp] = useState(Array(4).fill(""));
-  const [timer, setTimer] = useState(60); // 60 seconds ka timer state
+  const [timer, setTimer] = useState(30); // 30 seconds ka timer state
   const [canResend, setCanResend] = useState(false); // Resend button controller
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   // Timer run karne ke liye useEffect hook
   useEffect(() => {
@@ -50,39 +55,53 @@ const Verification = ({ useremail }) => {
   };
 
   const handleSubmit = async () => {
+    if (isVerifying) return;
+    if (!hasEmail) {
+      toast.error("Email not found. Please register again.");
+      return;
+    }
+
     try {
       const enteredOtp = otp.join("");
       if (enteredOtp.length < 4) {
         toast.warning("Please enter all 4 digits.");
         return;
       }
+
+      setIsVerifying(true);
       
       await axios.post(
-        "http://localhost:5000/api/v1/student/verify",
+        `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/verify`,
         { otp: enteredOtp },
         { withCredentials: true }
       );
       toast.success("OTP Verified Successfully!");
       setOtp(new Array(4).fill(""));
+      setTimeout(() => {
+        navigate("/finalpage");
+      }, 1500);
     } catch (error) {
       console.error("Error Response:", error.response?.data || error.message);
       toast.error("Invalid OTP. Please try again.");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
   const handleResend = async () => {
-    if (!canResend) return; // Agar timer chal raha hai toh execute mat hone do
+    if (!canResend || isResending) return; // Agar timer chal raha hai ya resend request pending hai toh execute mat hone do
 
     try {
-      await axios.get("http://localhost:5000/api/v1/student/resend-otp", { withCredentials: true });
+      setIsResending(true);
+      await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/student/resend-otp`, { withCredentials: true });
       toast.info("OTP Resent!", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: true,
       });
       
-      // Resend hone ke baad timer ko dubara 60s par reset karo
-      setTimer(60);
+      // Resend hone ke baad timer ko dubara 30s par reset karo
+      setTimer(30);
       setCanResend(false);
     } catch (error) {
       console.log(error.message);
@@ -91,6 +110,8 @@ const Verification = ({ useremail }) => {
         autoClose: 3000,
         hideProgressBar: true,
       });
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -99,7 +120,7 @@ const Verification = ({ useremail }) => {
       <ToastContainer />
       <div className="verihead">Verification Code</div>
       <div className="para">
-        We have sent a verification code to your college id <span>{useremail}</span>✏
+        We have sent a verification code to your college id <span>{useremail}</span>
       </div>
       <div className="otp">
         {otp.map((digit, index) => (
@@ -117,18 +138,19 @@ const Verification = ({ useremail }) => {
         ))}
       </div>
       
-      <button className="submitbtn" onClick={handleSubmit}>
-        SUBMIT
+      <button className="submitbtn" onClick={handleSubmit} disabled={isVerifying || !hasEmail}>
+        {isVerifying ? "Submitting..." : "SUBMIT"}
       </button>
      
       {/* Timer text conditionally render hoga aur disabled status ke liye class lag jayegi */}
-      <div 
+      <button
+        type="button"
         className={`resend ${!canResend ? "disabled-resend" : ""}`} 
         onClick={handleResend}
-        style={{ cursor: canResend ? 'pointer' : 'not-allowed' }}
+        disabled={!canResend || isResending}
       >
-        {canResend ? "Resend OTP" : `Resend OTP in ${timer}s`}
-      </div>
+        {isResending ? "Resending..." : canResend ? "Resend OTP" : `Resend OTP in ${timer}s`}
+      </button>
     </div>
   );
 };

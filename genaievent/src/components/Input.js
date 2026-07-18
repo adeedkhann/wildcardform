@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import ReCAPTCHA from 'react-google-recaptcha';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 const Input = ({ handleevent }) => {
   const [link, setLink] = useState("");
@@ -16,37 +16,20 @@ const Input = ({ handleevent }) => {
   const [studentNumber, setStudentNumber] = useState('');
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
-  const [captchaSize, setCaptchaSize] = useState('');
   const [domain, setDomain] = useState("");
-  const containerRef = useRef(null);
-  const [captchaToken, setCaptchaToken] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCaptcha = async (token) => {
-    setCaptchaToken(token);
-    try {
-      await axios.post("http://turing.mlcoe.tech/api/v1/student/validate", { recaptchaValue: token }, { withCredentials: true });
-    } catch (err) {
-      console.error("Captcha verification failed:", err.response?.data || err.message);
-    }
-  };
+  // reCAPTCHA v3 hook — runs invisibly in the background
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
-  useEffect(() => {
-    const containerWidth = containerRef.current?.offsetWidth || window.innerWidth;
-    if (containerWidth < 450) {
-      setCaptchaSize("compact");
-    } else {
-      setCaptchaSize("normal");
-    }
-  }, []);
 
   const regexPatterns = {
-    name: /^[A-Za-z\s]{3,30}$/,
-    branch: /^[A-Za-z\s]+$/,
+    name: /^(?=.{3,30}$)[A-Za-z]+(?: [A-Za-z]+)*$/,
+    branch: /^[A-Za-z\s()]+$/,
     email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-    mobile: /^[0-9]{10}$/,
-    studentNumber: /^[0-9]{5,7}$/,
-    // Naya University Roll Number regex (starts with 25, digits only, length 10 to 15)
-    univRoll: /^25[0-9]{8,13}$/, 
+    mobile: /^\d{10}$/,
+    studentNumber: /^\d{7,8}$/,
+    univRoll: /^\d{13}$/,
     github: /^(https?:\/\/)?(www\.)?github\.com\/.+/i,
     figma: /^(https?:\/\/)?(www\.)?figma\.com\/.+/i
   };
@@ -56,16 +39,14 @@ const Input = ({ handleevent }) => {
     const pattern = regexPatterns[field];
     if (pattern && !pattern.test(value)) {
       if (field === "univRoll") {
-        setErrors((prev) => ({ ...prev, univRoll: "Roll number must start with 25 and be 10-15 digits long" }));
+        setErrors((prev) => ({ ...prev, univRoll: "Roll number must be exactly 13 digits" }));
+      } else if (field === "studentNumber") {
+        setErrors((prev) => ({ ...prev, studentNumber: "Student number must be 7 to 8 digits" }));
+      } else if (field === "name") {
+        setErrors((prev) => ({ ...prev, name: "Name can contain only letters with single spaces between words" }));
       } else {
         setErrors((prev) => ({ ...prev, [field]: `Invalid ${field}` }));
       }
-      return;
-    }
-
-    // 2. Student Number Custom Validation
-    if (field === "studentNumber" && !(value.startsWith("25"))) {
-      setErrors((prev) => ({ ...prev, studentNumber: "Student number must start with 25" }));
       return;
     }
 
@@ -76,12 +57,12 @@ const Input = ({ handleevent }) => {
         return;
       }
       
-      if (domain === "Designer") {
+      if (domain === "designer") {
         if (!regexPatterns.figma.test(value)) {
           setErrors((prev) => ({ ...prev, link: "Invalid Figma Link (Must start with figma.com)" }));
           return;
         }
-      } else if (domain === "Web Developer" || domain === "Machine Learning") {
+      } else if (domain === "web-developer" || domain === "machine-learning") {
         if (!regexPatterns.github.test(value)) {
           setErrors((prev) => ({ ...prev, link: "Invalid GitHub Link (Must start with github.com)" }));
           return;
@@ -116,12 +97,20 @@ const Input = ({ handleevent }) => {
   const handleClick = async (e) => {
     e.preventDefault();
 
+    if (isSubmitting) return;
+
     // Required fields check
     if (
       !name || !branch || !univRoll || !gender || !scholarType ||
       !studentNumber || !email || !mobile || !domain || !link
     ) {
       toast.error("Please fill all the required fields.");
+      return;
+    }
+
+    // reCAPTCHA v3 — get token before submitting
+    if (!executeRecaptcha) {
+      toast.error("reCAPTCHA not ready. Please wait a moment.");
       return;
     }
 
@@ -137,51 +126,68 @@ const Input = ({ handleevent }) => {
     }
 
     // Submit ke time final link verification (Extra Safety)
-    if (domain === "Designer" && !regexPatterns.figma.test(link)) {
+    if (domain === "designer" && !regexPatterns.figma.test(link)) {
       toast.error("Please enter a valid Figma link.");
       return;
     }
-    if ((domain === "Web Developer" || domain === "Machine Learning") && !regexPatterns.github.test(link)) {
+    if ((domain === "web-developer" || domain === "machine-learning") && !regexPatterns.github.test(link)) {
       toast.error("Please enter a valid GitHub link.");
       return;
     }
 
-    handleevent(email);
-
     // Final check before hitting API
-    if (Object.keys(errors).length === 0) {
-      const formData = {
-        fullName: name,
-        branch: branch,
-        link: link,
-        rollNumber: univRoll,
-        gender: gender,
-        scholar: scholarType,
-        studentNumber: studentNumber,
-        studentEmail: email,
-        mobileNumber: mobile,
-        domain: domain
-      };
-      try {
-        await axios.post(`http://turing.mlcoe.tech/api/v1/student/register`,
-          formData,
-          { withCredentials: true }
-        );
-        toast.success("Form submitted successfully! 🎉");
-        navigate("/Verify");
-        setName('');
-        setBranch('');
-        setUnivRoll('');
-        setGender('');
-        setScholarType('');
-        setStudentNumber('');
-        setEmail('');
-        setMobile('');
-        setDomain('');
-        setLink('');
-      } catch (err) {
-        toast.error("Registration failed. Please try again.");
-      }
+    if (Object.keys(errors).length > 0) {
+      toast.error("Please fix the highlighted errors first.");
+      return;
+    }
+
+    const formData = {
+      fullName: name,
+      branch: branch,
+      link: link,
+      rollNumber: univRoll,
+      gender: gender,
+      scholar: scholarType,
+      studentNumber: studentNumber,
+      studentEmail: email,
+      mobileNumber: mobile,
+      domain: domain
+    };
+
+    setIsSubmitting(true);
+    try {
+      const recaptchaToken = await executeRecaptcha('register');
+      // Send the token to backend for verification
+      await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/validate`,
+        { recaptchaValue: recaptchaToken },
+        { withCredentials: true }
+      );
+
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/student/register`,
+        formData,
+        { withCredentials: true }
+      );
+      handleevent(email);
+      toast.success("OTP Sent successfully! 🎉");
+      navigate("/Verify");
+      setName('');
+      setBranch('');
+      setUnivRoll('');
+      setGender('');
+      setScholarType('');
+      setStudentNumber('');
+      setEmail('');
+      setMobile('');
+      setDomain('');
+      setLink('');
+    } catch (err) {
+      // Show the actual error message from the backend
+      const errorMsg = err.response?.data?.message || "Registration failed. Please try again.";
+      toast.error(errorMsg);
+      console.log(err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -195,7 +201,13 @@ const Input = ({ handleevent }) => {
             id="name"
             name="name"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              const sanitizedName = e.target.value
+                .replace(/[^A-Za-z\s]/g, "")
+                .replace(/\s{2,}/g, " ")
+                .replace(/^\s+/g, "");
+              setName(sanitizedName);
+            }}
             onBlur={(e) => validateField("name", e.target.value)}
             required
           />
@@ -215,15 +227,14 @@ const Input = ({ handleevent }) => {
             <option value="" disabled>Select Branch</option>
             <option value="CSIT">CSIT</option>
             <option value="CSE">CSE</option>
-            <option value="CSE(AIML)">CSE(AIML)</option>
+            <option value="CSE(AI&ML)">CSE(AI&ML)</option>
             <option value="CSE(DS)">CSE(DS)</option>
-            <option value="CSE(HINDI)">CSE(HINDI)</option>
+            <option value="CS(H)">CS(Hindi)</option>
             <option value="IT">IT</option>
             <option value="EN">EN</option>
-            <option value="CIVIL">CIVIL</option>
-            <option value="MECHANICAL">MECHANICAL</option>
+            <option value="Civil">Civil</option>
+            <option value="ME">Mechanical</option>
             <option value="AIML">AIML</option>
-            <option value="ECE">ECE</option>
             <option value="CS">CS</option>
           </select>
           {errors.branch && <small className="error">{errors.branch}</small>}
@@ -247,9 +258,9 @@ const Input = ({ handleevent }) => {
             required
           >
             <option value="" disabled>Select Domain</option>
-            <option value="Machine Learning">Machine Learning</option>
-            <option value="Web Developer">Web Developer</option>
-            <option value="Designer">Designer</option>
+            <option value="machine-learning">Machine Learning</option>
+            <option value="web-developer">Web Developer</option>
+            <option value="designer">Designer</option>
           </select>
           {errors.domain && <small className="error">{errors.domain}</small>}
         </div>
@@ -257,7 +268,7 @@ const Input = ({ handleevent }) => {
         {domain && (
           <div className="input">
             <label htmlFor="link">
-              {domain === "Designer" ? "Figma Link" : "GitHub Link"}
+              {domain === "designer" ? "Figma Link" : "GitHub Link"}
             </label>
             <input
               type="url"
@@ -279,7 +290,12 @@ const Input = ({ handleevent }) => {
             id="univRoll"
             name="univRoll"
             value={univRoll}
-            onChange={(e) => setUnivRoll(e.target.value)}
+            inputMode="numeric"
+            maxLength={13}
+            onChange={(e) => {
+              const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 13);
+              setUnivRoll(digitsOnly);
+            }}
             onBlur={(e) => validateField("univRoll", e.target.value)}
             required
           />
@@ -299,7 +315,6 @@ const Input = ({ handleevent }) => {
               <option value="" disabled>Select Gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
-              <option value="other">Other</option>
             </select>
           </div>
           <div className="scholar">
@@ -311,8 +326,8 @@ const Input = ({ handleevent }) => {
               required
             >
               <option value="" disabled>Select Scholar Type</option>
-              <option value="day">Day Scholar</option>
-              <option value="hostel">Hosteller</option>
+              <option value="DayScholar">Day Scholar</option>
+              <option value="Hostler">Hosteller</option>
             </select>
           </div>
         </div>
@@ -323,7 +338,13 @@ const Input = ({ handleevent }) => {
             type="tel"
             name="studentNumber"
             value={studentNumber}
-            onChange={(e) => setStudentNumber(e.target.value)}
+            inputMode="numeric"
+            minLength={7}
+            maxLength={8}
+            onChange={(e) => {
+              const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 8);
+              setStudentNumber(digitsOnly);
+            }}
             onBlur={(e) => validateField("studentNumber", e.target.value)}
             required
           />
@@ -351,28 +372,27 @@ const Input = ({ handleevent }) => {
             type="tel"
             name="mobile"
             value={mobile}
-            onChange={(e) => setMobile(e.target.value)}
+            inputMode="numeric"
+            minLength={10}
+            maxLength={10}
+            onChange={(e) => {
+              const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
+              setMobile(digitsOnly);
+            }}
             onBlur={(e) => validateField("mobile", e.target.value)}
             required
           />
           {errors.mobile && <small className="error">{errors.mobile}</small>}
         </div>
 
-        <div className="handleCaptcha" ref={containerRef}>
-          <ReCAPTCHA
-            sitekey="6LfZSKgrAAAAAC4TqAYwouSIUC1ACsattTPVy22f"
-            onChange={handleCaptcha}
-            size={captchaSize}
-          />
-        </div>
 
         <button
           onClick={handleClick}
           type="submit"
           className="verifybtn input"
-          disabled={Object.keys(errors).length > 0}
+          disabled={Object.keys(errors).length > 0 || isSubmitting}
         >
-          Verify
+          {isSubmitting ? "Verifying..." : "Verify"}
         </button>
       </form>
     </div>

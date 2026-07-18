@@ -78,4 +78,9 @@ const studentSchema = new Schema(
   { timestamps: true }
 );
 
+// Explicit unique indexes for core identity fields.
+studentSchema.index({ rollNumber: 1 }, { unique: true });
+studentSchema.index({ studentNumber: 1 }, { unique: true });
+studentSchema.index({ studentEmail: 1 }, { unique: true });
+
 export const Student = mongoose.model("Student", studentSchema);

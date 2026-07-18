@@ -6,6 +6,7 @@ import Verification from './components/Verification';
 import { ToastContainer } from 'react-toastify';
 import { useState } from 'react';
 import Finalpage from './components/Finalpage';
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 
 function AppContent() {
   const [useremail, setUserEmail] = useState();
@@ -67,9 +68,11 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}>
+      <Router>
+        <AppContent />
+      </Router>
+    </GoogleReCaptchaProvider>
   );
 }
 

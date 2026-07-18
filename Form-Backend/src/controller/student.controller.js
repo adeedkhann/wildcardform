@@ -106,17 +106,19 @@ const registerStudent = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Unauthorized student Number");
 }
 
-    const emailExist = await Student.findOne({ studentEmail });
-    const numberExist = await Student.findOne({ mobileNumber });
-    const stNumExist= await Student.findOne({studentNumber});
-    const studentExist = emailExist || numberExist || stNumExist;
+    const existingStudent = await Student.findOne({
+        $or: [{ studentEmail }, { studentNumber }, { rollNumber }],
+    });
 
     if (mobileNumber.length !== 10 || isNaN(Number(mobileNumber))) {
         throw new ApiError(400, "Mobile Number is invalid");
     }
 
-    if (studentExist) {
-        throw new ApiError(401, "Already registered email");
+    if (existingStudent) {
+        throw new ApiError(
+            409,
+            "Student with that university roll number or student number is already registered"
+        );
     }
 
     // Generate OTP
@@ -174,8 +176,34 @@ const verifyStudentRegistration = asyncHandler(async (req, res) => {
 
     const email = req.session.userData.studentEmail;
 
+    const existingStudent = await Student.findOne({
+        $or: [
+            { studentEmail: req.session.userData.studentEmail },
+            { studentNumber: req.session.userData.studentNumber },
+            { rollNumber: req.session.userData.rollNumber },
+        ],
+    });
 
-    const newStudent = await Student.create(req.session.userData);
+    if (existingStudent) {
+        throw new ApiError(
+            409,
+            "Student with that university roll number or student number is already registered"
+        );
+    }
+
+    let newStudent;
+    try {
+        newStudent = await Student.create(req.session.userData);
+    } catch (error) {
+        // Handle DB-level unique index conflicts (race conditions / concurrent requests)
+        if (error?.code === 11000) {
+            throw new ApiError(
+                409,
+                "Student with that university roll number or student number is already registered"
+            );
+        }
+        throw error;
+    }
 
     if (!newStudent) {
         throw new ApiError(500, "Failed to create student. Please try again.");
