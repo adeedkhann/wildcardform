@@ -1,27 +1,26 @@
-import axios from 'axios';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import axios from "axios";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 const Input = ({ handleevent }) => {
   const [link, setLink] = useState("");
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [branch, setBranch] = useState('');
-  const [univRoll, setUnivRoll] = useState('');
-  const [gender, setGender] = useState('');
-  const [scholarType, setScholarType] = useState('');
-  const [studentNumber, setStudentNumber] = useState('');
-  const [email, setEmail] = useState('');
-  const [mobile, setMobile] = useState('');
+  const [name, setName] = useState("");
+  const [branch, setBranch] = useState("");
+  const [univRoll, setUnivRoll] = useState("");
+  const [gender, setGender] = useState("");
+  const [scholarType, setScholarType] = useState("");
+  const [studentNumber, setStudentNumber] = useState("");
+  const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
   const [domain, setDomain] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // reCAPTCHA v3 hook — runs invisibly in the background
   const { executeRecaptcha } = useGoogleReCaptcha();
-
 
   const regexPatterns = {
     name: /^(?=.{3,30}$)[A-Za-z]+(?: [A-Za-z]+)*$/,
@@ -31,7 +30,7 @@ const Input = ({ handleevent }) => {
     studentNumber: /^\d{7,8}$/,
     univRoll: /^\d{13}$/,
     github: /^(https?:\/\/)?(www\.)?github\.com\/.+/i,
-    figma: /^(https?:\/\/)?(www\.)?figma\.com\/.+/i
+    figma: /^(https?:\/\/)?(www\.)?figma\.com\/.+/i,
   };
 
   const validateField = (field, value) => {
@@ -39,11 +38,20 @@ const Input = ({ handleevent }) => {
     const pattern = regexPatterns[field];
     if (pattern && !pattern.test(value)) {
       if (field === "univRoll") {
-        setErrors((prev) => ({ ...prev, univRoll: "Roll number must be exactly 13 digits" }));
+        setErrors((prev) => ({
+          ...prev,
+          univRoll: "Roll number must be exactly 13 digits",
+        }));
       } else if (field === "studentNumber") {
-        setErrors((prev) => ({ ...prev, studentNumber: "Student number must be 7 to 8 digits" }));
+        setErrors((prev) => ({
+          ...prev,
+          studentNumber: "Student number must be 7 to 8 digits",
+        }));
       } else if (field === "name") {
-        setErrors((prev) => ({ ...prev, name: "Name can contain only letters with single spaces between words" }));
+        setErrors((prev) => ({
+          ...prev,
+          name: "Name can contain only letters with single spaces between words",
+        }));
       } else {
         setErrors((prev) => ({ ...prev, [field]: `Invalid ${field}` }));
       }
@@ -56,15 +64,21 @@ const Input = ({ handleevent }) => {
         setErrors((prev) => ({ ...prev, link: "Link is required" }));
         return;
       }
-      
+
       if (domain === "designer") {
         if (!regexPatterns.figma.test(value)) {
-          setErrors((prev) => ({ ...prev, link: "Invalid Figma Link (Must start with figma.com)" }));
+          setErrors((prev) => ({
+            ...prev,
+            link: "Invalid Figma Link (Must start with figma.com)",
+          }));
           return;
         }
       } else if (domain === "web-developer" || domain === "machine-learning") {
         if (!regexPatterns.github.test(value)) {
-          setErrors((prev) => ({ ...prev, link: "Invalid GitHub Link (Must start with github.com)" }));
+          setErrors((prev) => ({
+            ...prev,
+            link: "Invalid GitHub Link (Must start with github.com)",
+          }));
           return;
         }
       }
@@ -77,10 +91,17 @@ const Input = ({ handleevent }) => {
     });
 
     // 4. Email aur Student Number match validation
-    if ((field === "email" || field === "studentNumber") && email && studentNumber) {
+    if (
+      (field === "email" || field === "studentNumber") &&
+      email &&
+      studentNumber
+    ) {
       const emailMatch = email.match(/\d+/g);
-      const numberInEmail = emailMatch ? emailMatch.join('') : '';
-      if (!email.includes(studentNumber) || !numberInEmail.includes(studentNumber)) {
+      const numberInEmail = emailMatch ? emailMatch.join("") : "";
+      if (
+        !email.includes(studentNumber) ||
+        !numberInEmail.includes(studentNumber)
+      ) {
         setErrors((prev) => ({
           ...prev,
           email: "Student number does not match with email ID",
@@ -101,8 +122,16 @@ const Input = ({ handleevent }) => {
 
     // Required fields check
     if (
-      !name || !branch || !univRoll || !gender || !scholarType ||
-      !studentNumber || !email || !mobile || !domain || !link
+      !name ||
+      !branch ||
+      !univRoll ||
+      !gender ||
+      !scholarType ||
+      !studentNumber ||
+      !email ||
+      !mobile ||
+      !domain ||
+      !link
     ) {
       toast.error("Please fill all the required fields.");
       return;
@@ -130,7 +159,10 @@ const Input = ({ handleevent }) => {
       toast.error("Please enter a valid Figma link.");
       return;
     }
-    if ((domain === "web-developer" || domain === "machine-learning") && !regexPatterns.github.test(link)) {
+    if (
+      (domain === "web-developer" || domain === "machine-learning") &&
+      !regexPatterns.github.test(link)
+    ) {
       toast.error("Please enter a valid GitHub link.");
       return;
     }
@@ -152,34 +184,57 @@ const Input = ({ handleevent }) => {
       studentEmail: email,
       mobileNumber: mobile,
       domain: domain,
-      recaptchaValue: null
+      recaptchaValue: null,
     };
 
     setIsSubmitting(true);
     try {
-      const recaptchaToken = await executeRecaptcha('register');
-      formData.recaptchaValue = recaptchaToken;
+      const recaptchaToken = await executeRecaptcha("register");
 
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/student/register`,
-        formData,
-        { withCredentials: true }
+      if (!recaptchaToken) {
+        toast.error("reCAPTCHA failed to load. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Bundle the updated object safely
+      const completeFormData = {
+        fullName: name,
+        branch: branch,
+        link: link,
+        rollNumber: univRoll,
+        gender: gender,
+        scholar: scholarType,
+        studentNumber: studentNumber,
+        studentEmail: email,
+        mobileNumber: mobile,
+        domain: domain,
+        recaptchaValue: recaptchaToken, // Build cleanly with the token included
+      };
+
+      await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/register`,
+        completeFormData,
+        { withCredentials: true },
       );
+
       handleevent(email);
       toast.success("OTP Sent successfully! 🎉");
       navigate("/Verify");
-      setName('');
-      setBranch('');
-      setUnivRoll('');
-      setGender('');
-      setScholarType('');
-      setStudentNumber('');
-      setEmail('');
-      setMobile('');
-      setDomain('');
-      setLink('');
+      setName("");
+      setBranch("");
+      setUnivRoll("");
+      setGender("");
+      setScholarType("");
+      setStudentNumber("");
+      setEmail("");
+      setMobile("");
+      setDomain("");
+      setLink("");
     } catch (err) {
       // Show the actual error message from the backend
-      const errorMsg = err.response?.data?.message || "Registration failed. Please try again.";
+      const errorMsg =
+        err.response?.data?.message || "Registration failed. Please try again.";
       toast.error(errorMsg);
       console.log(err);
     } finally {
@@ -220,7 +275,9 @@ const Input = ({ handleevent }) => {
             onBlur={(e) => validateField("branch", e.target.value)}
             required
           >
-            <option value="" disabled>Select Branch</option>
+            <option value="" disabled>
+              Select Branch
+            </option>
             <option value="CSIT">CSIT</option>
             <option value="CSE">CSE</option>
             <option value="CSE(AI&ML)">CSE(AI&ML)</option>
@@ -244,16 +301,18 @@ const Input = ({ handleevent }) => {
             value={domain}
             onChange={(e) => {
               setDomain(e.target.value);
-              setLink(""); 
+              setLink("");
               setErrors((prev) => {
                 const { link: _, ...rest } = prev;
-                return rest; 
+                return rest;
               });
             }}
             onBlur={(e) => validateField("domain", e.target.value)}
             required
           >
-            <option value="" disabled>Select Domain</option>
+            <option value="" disabled>
+              Select Domain
+            </option>
             <option value="machine-learning">Machine Learning</option>
             <option value="web-developer">Web Developer</option>
             <option value="designer">Designer</option>
@@ -295,7 +354,9 @@ const Input = ({ handleevent }) => {
             onBlur={(e) => validateField("univRoll", e.target.value)}
             required
           />
-          {errors.univRoll && <small className="error">{errors.univRoll}</small>}
+          {errors.univRoll && (
+            <small className="error">{errors.univRoll}</small>
+          )}
         </div>
 
         <div className="input1">
@@ -308,7 +369,9 @@ const Input = ({ handleevent }) => {
               onChange={(e) => setGender(e.target.value)}
               required
             >
-              <option value="" disabled>Select Gender</option>
+              <option value="" disabled>
+                Select Gender
+              </option>
               <option value="male">Male</option>
               <option value="female">Female</option>
             </select>
@@ -321,7 +384,9 @@ const Input = ({ handleevent }) => {
               onChange={(e) => setScholarType(e.target.value)}
               required
             >
-              <option value="" disabled>Select Scholar Type</option>
+              <option value="" disabled>
+                Select Scholar Type
+              </option>
               <option value="DayScholar">Day Scholar</option>
               <option value="Hostler">Hosteller</option>
             </select>
@@ -380,7 +445,6 @@ const Input = ({ handleevent }) => {
           />
           {errors.mobile && <small className="error">{errors.mobile}</small>}
         </div>
-
 
         <button
           onClick={handleClick}

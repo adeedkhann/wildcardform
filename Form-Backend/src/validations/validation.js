@@ -119,4 +119,10 @@ export const studentValidationSchema = Joi.object({
       "string.pattern.base":
         "Link must be a valid GitHub, Figma, or Canva URL.",
     }),
+    recaptchaValue: Joi.string()
+    .required()
+    .messages({
+      "string.empty": "reCAPTCHA validation token is required.",
+      "any.required": "reCAPTCHA token is missing."
+    })
 });
