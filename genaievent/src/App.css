@@ -1,0 +1,577 @@
+@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap');
+
+/* ===== RESET ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Root never scrolls — control is per-layer */
+}
+
+/* ===== FIXED BACKGROUND LAYER =====
+   Gradient + decorative balls. Always fixed to viewport. Never scrolls. */
+.bg-layer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(to top right, #9E4084, #0E0A0B, #291440, #374E9C);
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none; /* clicks pass through to content */
+}
+
+/* ===== DECORATIVE BALLS (inside .bg-layer) ===== */
+.top-right {
+  position: absolute;
+  top: 12%;
+  right: 2%;
+  width: 134px;
+  z-index: 1;
+}
+.bottom-right {
+  position: absolute;
+  bottom: 5%;
+  right: 0%;
+  z-index: 1;
+  width: 150px;
+}
+.top-left {
+  position: absolute;
+  top: 0%;
+  left: 0%;
+  z-index: 1;
+  width: 110px;
+}
+.top-left-ball {
+  position: absolute;
+  top: 16%;
+  left: 1%;
+  z-index: 1;
+  width: 140px;
+}
+.top-left-ball2 {
+  position: absolute;
+  top: 0%;
+  left: 80px;
+  z-index: 1;
+  width: 140px;
+}
+.bottom-left {
+  position: absolute;
+  bottom: 5%;
+  left: 0%;
+  z-index: 1;
+  width: 170px;
+}
+.bottom-left-ball {
+  position: absolute;
+  bottom: 3%;
+  left: 84px;
+  z-index: 1;
+  width: 106px;
+}
+.bottom-left-ball2 {
+  position: absolute;
+  bottom: 1%;
+  left: 0%;
+  z-index: 1;
+  width: 153px;
+}
+
+/* ===== CONTENT LAYER =====
+   Sits on top of bg-layer. Scroll behavior toggled via modifier classes. */
+.content-layer {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 30px 0;
+}
+
+/* SCROLLABLE: Form page — vertical scroll allowed */
+.content-layer.page-scrollable {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
+  padding-bottom: 60px;
+}
+
+/* STATIC: OTP & Final pages — no scroll, centered content */
+.content-layer.page-static {
+  overflow: hidden;
+  justify-content: center;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* ===== LOGO ===== */
+.logo {
+  width: 200px;
+  margin-bottom: 40px;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+/* On static pages, reduce logo spacing so everything fits in viewport */
+.content-layer.page-static .logo {
+  margin-bottom: 20px;
+}
+
+/* ===== HEADING ===== */
+h1 {
+  font-family: "League Spartan", sans-serif;
+  font-weight: 600;
+  font-size: 45px;
+  text-align: center;
+  vertical-align: middle;
+  background: linear-gradient(#FFFFFF, #252525);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 40px;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+/* On static pages, tighten heading margin */
+.content-layer.page-static h1 {
+  margin-bottom: 20px;
+}
+
+/* ===== CAPTCHA ===== */
+.handleCaptcha {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* ===== INPUT FORM CONTAINER ===== */
+.inputcontainer {
+  max-height: none;
+  width: 500px;
+  max-width: 100%;
+  color: aliceblue;
+  padding: 50px;
+  background-color: #0E000C;
+  border: 3px solid rgba(128, 128, 128, 0.5);
+  border-radius: 12px;
+  z-index: 1000;
+}
+.input {
+  margin-top: 35px;
+  font-family: "League Spartan", sans-serif;
+  font-weight: 600;
+  height: 72px;
+  width: 100%;
+}
+.input input {
+  padding-left: 15px;
+}
+input, select {
+  color: aliceblue;
+  width: 100%;
+  height: 40.8px;
+  border: 0.93px solid grey;
+  border-radius: 6.14px;
+  background-color: rgba(255, 255, 255, 0.059);
+}
+.verifybtn {
+  color: aliceblue;
+  line-height: 21px;
+  font-size: 21px;
+  width: 100%;
+  height: 53px;
+  border: 0.93px solid grey;
+  border-radius: 6.14px;
+  background: linear-gradient(to bottom left, #0E0A0B, #291440, #9E4084);
+}
+.input1 {
+  margin-top: 35px;
+  width: 100%;
+  height: 72px;
+  display: flex;
+  justify-content: space-between;
+}
+label {
+  top: 0px;
+  display: block;
+  height: 30px;
+}
+.gender {
+  width: 50%;
+  margin-right: 20px;
+}
+.scholar {
+  width: 50%;
+}
+option {
+  color: black;
+}
+.name {
+  font-family: "League Spartan", sans-serif;
+  font-weight: 600;
+  height: 72px;
+  width: 100%;
+}
+
+/* ===== VERIFICATION (OTP) CONTAINER ===== */
+.verification {
+  padding: 10px;
+  border: 3px solid rgba(128, 128, 128, 0.5);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  width: 500px;
+  max-width: 100%;
+  min-height: 500px;
+  max-height: 80vh;
+  background-color: rgb(8, 6, 28);
+  z-index: 1000;
+}
+.verihead {
+  color: aliceblue;
+  font-family: "League Spartan", sans-serif;
+  font-weight: 600;
+  text-align: center;
+  font-size: 40px;
+  margin-top: 5%;
+  letter-spacing: 1%;
+}
+.para {
+  color: rgb(255, 255, 255);
+  width: 90%;
+  height: 64px;
+  margin-top: 8%;
+  opacity: 60%;
+  font-family: "League Spartan", sans-serif;
+  font-weight: 500;
+  font-size: 24px;
+  text-align: center;
+}
+.para span {
+  text-decoration: underline;
+}
+.otp {
+  height: 78.1px;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  margin-top: 15%;
+}
+.no {
+  background-color: rgba(255, 255, 255, 0.02);
+  width: 15%;
+  height: 80%;
+  border: 1.1px solid rgba(255, 255, 255, 0.302);
+  border-radius: 7.28px;
+  text-align: center;
+  font-size: 24px;
+}
+.error {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+.submitbtn {
+  margin-top: 10%;
+  width: 90%;
+  height: 53px;
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: large;
+  font-family: "League Spartan", sans-serif;
+  background: linear-gradient(to bottom left, #0E0A0B, #291440, #9E4084);
+}
+.resend {
+  color: aliceblue;
+  padding: 5%;
+  font-weight: 500;
+  font-size: 20px;
+  text-decoration: underline;
+}
+
+/* ===== FINAL PAGE ===== */
+.final {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.verification1 {
+  padding: 20px;
+  border: 3px solid rgba(128, 128, 128, 0.5);
+  border-radius: 12px;
+  gap: 30px;
+  align-items: left;
+  display: flex;
+  flex-direction: column;
+  width: 500px;
+  max-width: 100%;
+  height: auto;
+  background-color: rgb(8, 6, 28);
+  z-index: 1000;
+}
+ul {
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  padding-left: 30px;
+  color: white;
+  font-family: "League Spartan", sans-serif;
+  font-size: 25px;
+  gap: 20px;
+}
+.finalhead {
+  color: white;
+  font-family: "League Spartan", sans-serif;
+  font-size: 35px;
+  background: linear-gradient(#FFFFFF, #252525);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  word-spacing: 3px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.text {
+  color: white;
+  font-family: "League Spartan", sans-serif;
+  font-size: 25px;
+  text-align: center;
+  line-height: 30px;
+}
+
+/* ===== WISHES SECTION ===== */
+.wishes-section {
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 20px;
+  text-align: center;
+  margin-top: 10px;
+}
+.wishes-section h3 {
+  color: #ffffff;
+  font-family: "League Spartan", sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+.wishes-section p {
+  color: rgba(255, 255, 255, 0.6);
+  font-family: "League Spartan", sans-serif;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 400;
+}
+
+/* ===== RESEND DISABLED ===== */
+.resend.disabled-resend {
+  opacity: 0.5;
+  text-decoration: none;
+}
+
+
+/* ================================================================
+   RESPONSIVE BREAKPOINTS
+   ================================================================ */
+
+/* ---- Tablet & small desktop (≤700px) ---- */
+@media screen and (max-width: 700px) {
+  .content-layer {
+    padding: 20px 15px 0;
+  }
+  .top-right {
+    top: 6%;
+    right: 2%;
+    width: 100px;
+  }
+  .bottom-right {
+    bottom: 5%;
+    right: 0%;
+    width: 100px;
+  }
+  .top-left {
+    top: 0%;
+    left: 0%;
+    width: 75px;
+  }
+  .top-left-ball {
+    top: 11%;
+    left: 1%;
+    width: 90px;
+  }
+  .top-left-ball2 {
+    top: 0%;
+    left: 54px;
+    width: 100px;
+  }
+  .bottom-left {
+    bottom: 5%;
+    left: 0%;
+    width: 110px;
+  }
+  .bottom-left-ball {
+    bottom: 3%;
+    left: 35px;
+    width: 65px;
+  }
+  .bottom-left-ball2 {
+    bottom: 1%;
+    left: 0%;
+    width: 83px;
+  }
+  .inputcontainer {
+    width: 80%;
+    max-width: 500px;
+  }
+  .verification {
+    width: 90%;
+    max-width: 500px;
+  }
+}
+
+/* ---- Mobile (≤450px) ---- */
+@media screen and (max-width: 450px) {
+  .content-layer {
+    padding: 15px 10px 0;
+  }
+  .logo {
+    width: 150px;
+    margin-bottom: 25px;
+  }
+  h1 {
+    font-size: 35px;
+    margin-bottom: 25px;
+  }
+  .top-right {
+    top: 6%;
+    right: 2%;
+    width: 100px;
+  }
+  .bottom-right {
+    bottom: 5%;
+    right: 0%;
+    width: 100px;
+  }
+  .top-left {
+    top: 0%;
+    left: 0%;
+    width: 54px;
+  }
+  .top-left-ball {
+    top: 8%;
+    left: 1%;
+    width: 64px;
+  }
+  .top-left-ball2 {
+    top: 0%;
+    left: 44px;
+    width: 57px;
+  }
+  .bottom-left {
+    bottom: 5%;
+    left: 0%;
+    width: 110px;
+  }
+  .bottom-left-ball {
+    bottom: 3%;
+    left: 35px;
+    width: 65px;
+  }
+  .bottom-left-ball2 {
+    bottom: 1%;
+    left: 0%;
+    width: 83px;
+  }
+  .inputcontainer {
+    width: 90%;
+    padding: 20px;
+  }
+  .verification {
+    width: 90%;
+    min-height: 400px;
+  }
+  .verihead {
+    font-size: 30px;
+  }
+  .para {
+    font-size: 19px;
+  }
+  .no {
+    height: 50%;
+  }
+  .resend {
+    font-size: 15px;
+  }
+  .query {
+    font-size: 2px;
+  }
+  .wishes-section h3 {
+    font-size: 20px;
+  }
+  .wishes-section p {
+    font-size: 14px;
+    line-height: 18px;
+  }
+}
+
+/* ---- Small mobile (≤360px) ---- */
+@media screen and (max-width: 360px) {
+  .content-layer {
+    padding: 10px 8px 0;
+  }
+  .logo {
+    width: 120px;
+    margin-bottom: 15px;
+  }
+  h1 {
+    font-size: 26px;
+    margin-bottom: 15px;
+  }
+  .inputcontainer {
+    width: 95%;
+    padding: 15px;
+  }
+  .verification {
+    width: 95%;
+    min-height: 380px;
+  }
+  .verihead {
+    font-size: 23px;
+  }
+  .para {
+    font-size: 15px;
+  }
+  .no {
+    height: 50%;
+  }
+  .resend {
+    font-size: 15px;
+  }
+}
+
+/* ===== Scrollbar Styling (for the form scroll) ===== */
+.content-layer.page-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+.content-layer.page-scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+.content-layer.page-scrollable::-webkit-scrollbar-thumb {
+  background: rgba(158, 64, 132, 0.4);
+  border-radius: 3px;
+}
+.content-layer.page-scrollable::-webkit-scrollbar-thumb:hover {
+  background: rgba(158, 64, 132, 0.7);
+}
