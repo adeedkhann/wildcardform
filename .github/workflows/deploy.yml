@@ -38,27 +38,9 @@ jobs:
           CI: false 
           REACT_APP_RECAPTCHA_SITE_KEY: ${{ secrets.REACT_APP_RECAPTCHA_SITE_KEY }}
           REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
-          PUBLIC_URL: /wildcard
         run: |
           npm ci
           npm run build
-
-      # --- FIXED WILDCARD COPY LOGIC ---
-      - name: Force Physical Subdirectory for GitHub Pages
-        run: |
-          # 1. Pehle pure build ka backup ek temporary folder me le lo
-          mkdir -p ./genaievent/temp_build
-          cp -r ./genaievent/build/* ./genaievent/temp_build/
-          
-          # 2. Ab main build folder ko poora saaf karo
-          rm -rf ./genaievent/build/*
-          
-          # 3. Build ke andar wildcard folder banao aur backup data usme daal do
-          mkdir -p ./genaievent/build/wildcard
-          cp -r ./genaievent/temp_build/* ./genaievent/build/wildcard/
-          
-          # 4. Cleanup temporary directory
-          rm -rf ./genaievent/temp_build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
