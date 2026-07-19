@@ -8,7 +8,7 @@ const Verification = ({ useremail }) => {
   const navigate = useNavigate();
   const hasEmail = Boolean(useremail && String(useremail).trim());
   const [otp, setOtp] = useState(Array(4).fill(""));
-  const [timer, setTimer] = useState(30); // 30 seconds ka timer state
+  const [timer, setTimer] = useState(60); 
   const [canResend, setCanResend] = useState(false); // Resend button controller
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
