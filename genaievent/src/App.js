@@ -1,4 +1,3 @@
-
 import './App.css';
 import Input from './components/Input';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router';
@@ -16,43 +15,47 @@ function AppContent() {
 
   const location = useLocation();
 
-  // Form page (/) = scrollable; OTP & Final pages = static (locked to viewport)
-  const isScrollable = location.pathname === '/';
+  // FIX 1: React Router v7 useLocation returns the absolute pathname including the base path.
+  // This matches both local development ('/') and production ('/wildcard' or '/wildcard/') accurately.
+  const isScrollable = location.pathname === '/' || location.pathname === '/wildcard' || location.pathname === '/wildcard/';
+
+  // FIX 2: Dynamically prepend the homepage public URL configuration path for assets so they don't break on deployment
+  const publicUrl = process.env.PUBLIC_URL || '';
 
   return (
     <>
       {/* LAYER 1: Fixed background — gradient + decorative balls */}
       <div className="bg-layer">
         <div className="top-right">
-          <img src="./top-right.png" alt="" height="100%" width="100%" />
+          <img src={`${publicUrl}/top-right.png`} alt="" height="100%" width="100%" />
         </div>
         <div className="bottom-right">
-          <img src="./bottom-right.png" alt="" height="100%" width="100%" />
+          <img src={`${publicUrl}/bottom-right.png`} alt="" height="100%" width="100%" />
         </div>
         <div className="top-left">
-          <img src="./top-left.png" alt="" height="100%" width="100%" />
+          <img src={`${publicUrl}/top-left.png`} alt="" height="100%" width="100%" />
         </div>
         <div className="top-left-ball">
-          <img src="./top-left-ball.png" alt="" height="100%" width="100%" />
+          <img src={`${publicUrl}/top-left-ball.png`} alt="" height="100%" width="100%" />
         </div>
         <div className="top-left-ball2">
-          <img src="./top-left-ball2.png" alt="" height="100%" width="100%" />
+          <img src={`${publicUrl}/top-left-ball2.png`} alt="" height="100%" width="100%" />
         </div>
         <div className="bottom-left">
-          <img src="./bottom-left.png" alt="" height="100%" width="100%" />
+          <img src={`${publicUrl}/bottom-left.png`} alt="" height="100%" width="100%" />
         </div>
         <div className="bottom-left-ball">
-          <img src="./bottom-left-ball.png" alt="" height="100%" width="100%" />
+          <img src={`${publicUrl}/bottom-left-ball.png`} alt="" height="100%" width="100%" />
         </div>
         <div className="bottom-left-ball2">
-          <img src="./bottom-left-ball2.png" alt="" height="100%" width="100%" />
+          <img src={`${publicUrl}/bottom-left-ball2.png`} alt="" height="100%" width="100%" />
         </div>
       </div>
 
       {/* LAYER 2: Content — conditionally scrollable or static */}
       <div className={`content-layer ${isScrollable ? 'page-scrollable' : 'page-static'}`}>
         <div className="logo">
-          <img src="./new logo.png" alt="/" height="100%" width="100%" />
+          <img src={`${publicUrl}/new logo.png`} alt="/" height="100%" width="100%" />
         </div>
         <h1>The Turing Test'26</h1>
         <Routes>
@@ -69,7 +72,8 @@ function AppContent() {
 function App() {
   return (
     <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}>
-      <Router>
+      {/* FIX 3: Route base directory explicitly configured */}
+      <Router basename="/wildcard">
         <AppContent />
       </Router>
     </GoogleReCaptchaProvider>

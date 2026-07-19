@@ -25,10 +25,10 @@ const Input = ({ handleevent }) => {
   const regexPatterns = {
     name: /^(?=.{3,30}$)[A-Za-z]+(?: [A-Za-z]+)*$/,
     branch: /^[A-Za-z\s()]+$/,
-    email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+    email: /^[a-zA-Z0-9._%+-]+@akgec\.ac\.in$/,
     mobile: /^\d{10}$/,
-    studentNumber: /^\d{7,8}$/,
-    univRoll: /^\d{13}$/,
+    studentNumber: /^25\d{5,6}$/,
+    univRoll: /^25\d{11}$/,
     github: /^(https?:\/\/)?(www\.)?github\.com\/.+/i,
     figma: /^(https?:\/\/)?(www\.)?figma\.com\/.+/i,
   };
