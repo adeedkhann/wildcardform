@@ -38,24 +38,10 @@ jobs:
           CI: false # Prevents warnings from breaking the build
           REACT_APP_RECAPTCHA_SITE_KEY: ${{ secrets.REACT_APP_RECAPTCHA_SITE_KEY }}
           REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
+          PUBLIC_URL: /wildcard # <-- Yeh browser ke 404 asset path ko automatic theek karega
         run: |
           npm ci
           npm run build
-
-      # --- STRUCTURAL FIX FOR WILDCARD ROUTING ---
-      - name: Structure for Wildcard Subdirectory
-        run: |
-          # 1. Pehle build ke andar wildcard naam ka folder banao
-          mkdir -p ./genaievent/build/wildcard
-          
-          # 2. Saari files aur folders ko safe jagah par temporarely move/copy karo
-          cp -r ./genaievent/build/static ./genaievent/build/wildcard/ 2>/dev/null || true
-          
-          # 3. Baaki assets aur index.html ko wildcard ke andar copy karo
-          find ./genaievent/build -maxdepth 1 -type f -exec cp {} ./genaievent/build/wildcard/ \;
-          
-          # 4. Root level par bhi static files ka duplicate copy chhod do taaki absolute routing fail na ho
-          cp -r ./genaievent/build/wildcard/static ./genaievent/build/ 2>/dev/null || true
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
