@@ -167,9 +167,11 @@ h1 {
 }
 .input {
   margin-top: 35px;
+  margin-bottom: 35px;
   font-family: "League Spartan", sans-serif;
   font-weight: 600;
-  height: 72px;
+  height: auto;
+  min-height: 72px;
   width: 100%;
 }
 .input input {
@@ -199,7 +201,7 @@ input, select {
   width: 100%;
   height: 72px;
   display: flex;
-  justify-content: space-between;
+  gap: 20px;
 }
 label {
   top: 0px;
@@ -207,11 +209,10 @@ label {
   height: 30px;
 }
 .gender {
-  width: 50%;
-  margin-right: 20px;
+  flex: 1;
 }
 .scholar {
-  width: 50%;
+  flex: 1;
 }
 option {
   color: black;
@@ -281,7 +282,8 @@ option {
 .error {
   color: red;
   font-size: 0.875rem;
-  margin-top: 0.25rem;
+  margin-top: 6px;
+  display: block;
 }
 .submitbtn {
   margin-top: 10%;
@@ -447,8 +449,9 @@ ul {
   .inputcontainer {
     width: 80%;
     max-width: 500px;
+    padding: 30px;
   }
-  .verification {
+  .verification, .verification1 {
     width: 90%;
     max-width: 500px;
   }
@@ -511,9 +514,18 @@ ul {
     width: 90%;
     padding: 20px;
   }
-  .verification {
+  .input1 {
+    flex-direction: column;
+    height: auto;
+    gap: 35px;
+  }
+  .gender, .scholar {
+    width: 100%;
+  }
+  .verification, .verification1 {
     width: 90%;
-    min-height: 400px;
+    min-height: auto;
+    padding: 20px;
   }
   .verihead {
     font-size: 30px;
@@ -556,9 +568,13 @@ ul {
     width: 95%;
     padding: 15px;
   }
-  .verification {
+  .input1 {
+    gap: 30px;
+  }
+  .verification, .verification1 {
     width: 95%;
-    min-height: 380px;
+    min-height: auto;
+    padding: 15px;
   }
   .verihead {
     font-size: 23px;
