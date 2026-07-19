@@ -73,7 +73,7 @@ function App() {
   return (
     <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}>
       {/* FIX 3: Route base directory explicitly configured */}
-      <Router basename="/wildcard">
+      <Router basename="/">
         <AppContent />
       </Router>
     </GoogleReCaptchaProvider>
