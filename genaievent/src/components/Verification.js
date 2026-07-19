@@ -28,13 +28,25 @@ const Verification = ({ useremail }) => {
   }, [timer]);
 
   const handleChange = (value, index) => {
-    if (/^[A-Za-z0-9]?$/.test(value)) { 
+    // If the pasted value is a 4-digit OTP
+    if (value.length === 4 && /^[A-Za-z0-9]{4}$/.test(value)) {
+      const newOtp = value.split("").map((c) => c.toUpperCase());
+      setOtp(newOtp);
+      const nextInput = document.getElementById("otp-input-3");
+      if (nextInput) nextInput.focus();
+      return;
+    }
+
+    // Otherwise, take the last character of the input value (to prevent duplication issues on mobile virtual keyboards)
+    const char = value.length > 0 ? value[value.length - 1] : "";
+    if (/^[A-Za-z0-9]?$/.test(char)) { 
       const newOtp = [...otp];
-      newOtp[index] = value.toUpperCase(); 
+      newOtp[index] = char.toUpperCase(); 
       setOtp(newOtp);
 
-      if (value && index < 3) {
-        document.getElementById(`otp-input-${index + 1}`).focus();
+      if (char && index < 3) {
+        const nextInput = document.getElementById(`otp-input-${index + 1}`);
+        if (nextInput) nextInput.focus();
       }
     }
   };
@@ -82,7 +94,8 @@ const Verification = ({ useremail }) => {
       }, 1500);
     } catch (error) {
       console.error("Error Response:", error.response?.data || error.message);
-      toast.error("Invalid OTP. Please try again.");
+      const serverMessage = error.response?.data?.message || "Invalid OTP. Please try again.";
+      toast.error(serverMessage);
     } finally {
       setIsVerifying(false);
     }
@@ -105,7 +118,8 @@ const Verification = ({ useremail }) => {
       setCanResend(false);
     } catch (error) {
       console.log(error.message);
-      toast.error("OTP not sent", {
+      const serverMessage = error.response?.data?.message || "OTP not sent";
+      toast.error(serverMessage, {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: true,

@@ -58,6 +58,7 @@ export const studentValidationSchema = Joi.object({
       "CSIT",
       "IT",
       "EN",
+      "ECE",
       "ME",
       "Civil"
     )

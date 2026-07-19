@@ -17,6 +17,7 @@ const errorHandler= (err, req, res, next) =>{
             error.stack } : {})
         }
 
+        console.log("Sending Error Message to Frontend:", response.message);
         return res.status(error.statusCode).json(response)
     }
 

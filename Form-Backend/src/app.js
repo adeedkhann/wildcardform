@@ -20,15 +20,21 @@ app.use(cors({
     credentials:true
 }))
 // 2. Session Middleware
+const isProduction = process.env.NODE_ENV === "production" && !process.env.CORS_ORIGIN?.includes("localhost");
+
+if (isProduction) {
+    app.set("trust proxy", 1);
+}
+
 app.use(
     session({
         secret: process.env.SECRET_KEY || "fallback-secret-key",
         resave: false,
         saveUninitialized: false,
         cookie: {
-             secure:false,
+            secure: isProduction,
             httpOnly: true,
-            sameSite:"lax",
+            sameSite: isProduction ? "none" : "lax",
             maxAge: 5 * 60 * 1000, // 5 minutes
         },
     })

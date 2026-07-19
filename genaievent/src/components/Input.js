@@ -23,10 +23,9 @@ const Input = ({ handleevent }) => {
   const { executeRecaptcha } = useGoogleReCaptcha();
 
   const regexPatterns = {
-    name: /^(?=.{3,30}$)[A-Za-z]+(?: [A-Za-z]+)*$/,
-    branch: /^[A-Za-z\s()]+$/,
+    name: /^(?=.{2,50}$)[A-Za-z]+(?: [A-Za-z]+)*$/,
     email: /^[a-zA-Z0-9._%+-]+@akgec\.ac\.in$/,
-    mobile: /^\d{10}$/,
+    mobile: /^[6-9]\d{9}$/,
     studentNumber: /^25\d{5,6}$/,
     univRoll: /^25\d{11}$/,
     github: /^(https?:\/\/)?(www\.)?github\.com\/.+/i,
@@ -96,12 +95,9 @@ const Input = ({ handleevent }) => {
       email &&
       studentNumber
     ) {
-      const emailMatch = email.match(/\d+/g);
-      const numberInEmail = emailMatch ? emailMatch.join("") : "";
-      if (
-        !email.includes(studentNumber) ||
-        !numberInEmail.includes(studentNumber)
-      ) {
+      const emailMatch = email.match(/25\d{5,8}(?=@)/);
+      const studentNoInEmail = emailMatch ? emailMatch[0] : "";
+      if (studentNoInEmail !== studentNumber) {
         setErrors((prev) => ({
           ...prev,
           email: "Student number does not match with email ID",
@@ -272,7 +268,6 @@ const Input = ({ handleevent }) => {
             name="branch"
             value={branch}
             onChange={(e) => setBranch(e.target.value)}
-            onBlur={(e) => validateField("branch", e.target.value)}
             required
           >
             <option value="" disabled>
@@ -285,6 +280,7 @@ const Input = ({ handleevent }) => {
             <option value="CS(H)">CS(Hindi)</option>
             <option value="IT">IT</option>
             <option value="EN">EN</option>
+            <option value="ECE">ECE</option>
             <option value="Civil">Civil</option>
             <option value="ME">Mechanical</option>
             <option value="AIML">AIML</option>

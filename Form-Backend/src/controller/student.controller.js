@@ -109,6 +109,7 @@ MLCOE Team`
 }
 
 const registerStudent = asyncHandler(async (req, res) => {
+    console.log("Received Registration Request Body:", req.body);
     const {
     fullName,
     studentNumber,
@@ -193,7 +194,10 @@ console.log("==================================");
 });
 
 const verifyStudentRegistration = asyncHandler(async (req, res) => {
+    console.log("Received Verification Request Body:", req.body);
     const { otp } = req.body;
+
+    console.log(`Comparing received OTP: "${otp}" with Session OTP: "${req.session?.otp}"`);
 
     // Validate OTP
     if (!req.session.otp) {
@@ -265,6 +269,7 @@ const verifyStudentRegistration = asyncHandler(async (req, res) => {
 
 
 const verifyCaptcha = async (req, res) => {
+    console.log("Received verifyCaptcha request body:", req.body);
     const { recaptchaValue } = req.body;
 
     try {
@@ -274,11 +279,13 @@ const verifyCaptcha = async (req, res) => {
         const statusCode = error instanceof ApiError ? error.statusCode : 500;
         const message = error instanceof ApiError ? error.message : 'reCAPTCHA verification error';
         console.error('reCAPTCHA error:', error);
+        console.log("Sending Captcha Error to Frontend:", message);
         return res.status(statusCode).json({ message });
     }
 };
 
 const resendOTP = asyncHandler(async (req, res) => {
+    console.log("Received Resend OTP Request");
     if (!req.session.userData) {
         throw new ApiError(400, "User data not found in session. Please start registration again.");
     }
@@ -296,6 +303,7 @@ const resendOTP = asyncHandler(async (req, res) => {
         otp: newOtp,
         otpExpiry,
     });
+    console.log(`Resent OTP generated for ${studentEmail}: ${newOtp}`);
 
     const otpSent = await sendOtp(studentEmail, newOtp, "resent");
     if (!otpSent) {

@@ -7,9 +7,11 @@ export const validateStudent = (req, res, next) => {
   });
 
   if (error) {
+    const errorMessages = error.details.map((err) => err.message);
+    console.log("Sending Validation Error to Frontend:", errorMessages);
     return res.status(400).json({
       success: false,
-      errors: error.details.map((err) => err.message),
+      errors: errorMessages,
     });
   }
 
@@ -17,10 +19,11 @@ export const validateStudent = (req, res, next) => {
   const emailPattern = /^[a-zA-Z0-9._%+-]*25\d{5,8}@akgec\.ac\.in$/;
 
 if (!emailPattern.test(value.studentEmail)) {
+  const errMsg = "Please enter a valid AKGEC email address in the format name2510087@akgec.ac.in.";
+  console.log("Sending Validation Error to Frontend:", errMsg);
   return res.status(400).json({
     success: false,
-    message:
-      "Please enter a valid AKGEC email address in the format name2510087@akgec.ac.in.",
+    message: errMsg,
   });
 }
 
@@ -29,10 +32,11 @@ if (!emailPattern.test(value.studentEmail)) {
   value.studentEmail.match(/25\d{5,8}(?=@)/)?.[0];
 
 if (studentNoInEmail !== value.studentNumber) {
+  const errMsg = "Student number in the email must match the provided student number.";
+  console.log("Sending Validation Error to Frontend:", errMsg);
   return res.status(400).json({
     success: false,
-    message:
-      "Student number in the email must match the provided student number.",
+    message: errMsg,
   });
 }
 
