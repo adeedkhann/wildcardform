@@ -18,12 +18,18 @@ export const studentValidationSchema = Joi.object({
 
   studentNumber: Joi.string()
   .trim()
-  .pattern(/^25\d{5,8}$/)
   .required()
+  .custom((value, helpers) => {
+    if (!value.startsWith("25")) {
+      return helpers.message("Student number must start with 25.");
+    }
+    if (!/^25\d{5,8}$/.test(value)) {
+      return helpers.message("Student number must start with 25 and be between 7 and 10 digits long.");
+    }
+    return value;
+  })
   .messages({
     "string.empty": "Student number is required.",
-    "string.pattern.base":
-      "Student number must start with 25 and be between 7 and 10 digits long.",
     "any.required": "Student number is required.",
   }),
 
@@ -80,11 +86,18 @@ export const studentValidationSchema = Joi.object({
 
   rollNumber: Joi.string()
     .trim()
-    .pattern(/^25\d{11}$/)
     .required()
+    .custom((value, helpers) => {
+      if (!value.startsWith("25")) {
+        return helpers.message("Roll number must start with 25.");
+      }
+      if (!/^25\d{11}$/.test(value)) {
+        return helpers.message("Roll number must start with 25 and contain exactly 13 digits.");
+      }
+      return value;
+    })
     .messages({
-      "string.pattern.base":
-        "Roll number must start with 25 and contain exactly 13 digits.",
+      "string.empty": "Roll number is required.",
       "any.required": "Roll number is required.",
     }),
 

@@ -26,30 +26,53 @@ const Input = ({ handleevent }) => {
     name: /^(?=.{2,50}$)[A-Za-z]+(?: [A-Za-z]+)*$/,
     email: /^[a-zA-Z0-9._%+-]+@akgec\.ac\.in$/,
     mobile: /^[6-9]\d{9}$/,
-    studentNumber: /^25\d{5,6}$/,
-    univRoll: /^25\d{11}$/,
     github: /^(https?:\/\/)?(www\.)?github\.com\/.+/i,
     figma: /^(https?:\/\/)?(www\.)?figma\.com\/.+/i,
   };
 
   const validateField = (field, value) => {
-    // 1. Pehle generic regex patterns check karein
-    const pattern = regexPatterns[field];
-    if (pattern && !pattern.test(value)) {
-      if (field === "univRoll") {
+    // Custom validations for univRoll and studentNumber
+    if (field === "univRoll") {
+      if (!value.startsWith("25")) {
+        setErrors((prev) => ({
+          ...prev,
+          univRoll: "University roll number must start with 25",
+        }));
+        return;
+      }
+      if (!/^25\d{11}$/.test(value)) {
         setErrors((prev) => ({
           ...prev,
           univRoll: "Roll number must be exactly 13 digits",
         }));
-      } else if (field === "studentNumber") {
+        return;
+      }
+    }
+
+    if (field === "studentNumber") {
+      if (!value.startsWith("25")) {
+        setErrors((prev) => ({
+          ...prev,
+          studentNumber: "Student number must start with 25",
+        }));
+        return;
+      }
+      if (!/^25\d{5,6}$/.test(value)) {
         setErrors((prev) => ({
           ...prev,
           studentNumber: "Student number must be 7 to 8 digits",
         }));
-      } else if (field === "name") {
+        return;
+      }
+    }
+
+    // 1. Pehle generic regex patterns check karein
+    const pattern = regexPatterns[field];
+    if (pattern && !pattern.test(value)) {
+      if (field === "name") {
         setErrors((prev) => ({
           ...prev,
-          name: "Name can contain only letters with single spaces between words",
+          name: "Invalid Name",
         }));
       } else {
         setErrors((prev) => ({ ...prev, [field]: `Invalid ${field}` }));
@@ -140,8 +163,12 @@ const Input = ({ handleevent }) => {
     }
 
     // Final check for Roll Number before submitting
-    if (!regexPatterns.univRoll.test(univRoll)) {
-      toast.error("Please enter a valid University Roll Number.");
+    if (!univRoll.startsWith("25")) {
+      toast.error("University roll number must start with 25.");
+      return;
+    }
+    if (!/^25\d{11}$/.test(univRoll)) {
+      toast.error("Roll number must be exactly 13 digits.");
       return;
     }
 
