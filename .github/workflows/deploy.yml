@@ -45,14 +45,17 @@ jobs:
       # --- STRUCTURAL FIX FOR WILDCARD ROUTING ---
       - name: Structure for Wildcard Subdirectory
         run: |
+          # 1. Pehle build ke andar wildcard naam ka folder banao
           mkdir -p ./genaievent/build/wildcard
-          cp -r ./genaievent/build/static ./genaievent/build/wildcard/
-          cp ./genaievent/build/index.html ./genaievent/build/wildcard/
-          cp ./genaievent/build/manifest.json ./genaievent/build/wildcard/ || true
-          cp ./genaievent/build/favicon.ico ./genaievent/build/wildcard/ || true
           
-          # Baaki images aur assets ko bhi wildcard folder me move karne ke liye
+          # 2. Saari files aur folders ko safe jagah par temporarely move/copy karo
+          cp -r ./genaievent/build/static ./genaievent/build/wildcard/ 2>/dev/null || true
+          
+          # 3. Baaki assets aur index.html ko wildcard ke andar copy karo
           find ./genaievent/build -maxdepth 1 -type f -exec cp {} ./genaievent/build/wildcard/ \;
+          
+          # 4. Root level par bhi static files ka duplicate copy chhod do taaki absolute routing fail na ho
+          cp -r ./genaievent/build/wildcard/static ./genaievent/build/ 2>/dev/null || true
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
