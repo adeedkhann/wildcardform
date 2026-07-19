@@ -1,7 +1,7 @@
 {
   "name": "genaievent",
   "version": "0.1.0",
-  "homepage": "https://mlcoe.tech",
+  "homepage": "https://wildcard.mlcoe.tech",
   "private": true,
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
