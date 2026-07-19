@@ -42,6 +42,18 @@ jobs:
           npm ci
           npm run build
 
+      # --- STRUCTURAL FIX FOR WILDCARD ROUTING ---
+      - name: Structure for Wildcard Subdirectory
+        run: |
+          mkdir -p ./genaievent/build/wildcard
+          cp -r ./genaievent/build/static ./genaievent/build/wildcard/
+          cp ./genaievent/build/index.html ./genaievent/build/wildcard/
+          cp ./genaievent/build/manifest.json ./genaievent/build/wildcard/ || true
+          cp ./genaievent/build/favicon.ico ./genaievent/build/wildcard/ || true
+          
+          # Baaki images aur assets ko bhi wildcard folder me move karne ke liye
+          find ./genaievent/build -maxdepth 1 -type f -exec cp {} ./genaievent/build/wildcard/ \;
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
