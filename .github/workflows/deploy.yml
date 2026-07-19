@@ -38,10 +38,22 @@ jobs:
           CI: false # Prevents warnings from breaking the build
           REACT_APP_RECAPTCHA_SITE_KEY: ${{ secrets.REACT_APP_RECAPTCHA_SITE_KEY }}
           REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
-          PUBLIC_URL: /wildcard # <-- Yeh browser ke 404 asset path ko automatic theek karega
+          PUBLIC_URL: /wildcard # Relative paths injection for routing
         run: |
           npm ci
           npm run build
+
+      # --- PHYSICAL WILDCARD SUBDIRECTORY INJECTION ---
+      - name: Force Physical Subdirectory for GitHub Pages
+        run: |
+          # 1. Build directory ke andar wildcard folder create karo
+          mkdir -p ./genaievent/build/wildcard
+          
+          # 2. Static directory chunks ko nested folder me copy karo
+          cp -r ./genaievent/build/static ./genaievent/build/wildcard/ 2>/dev/null || true
+          
+          # 3. Baaki root files (index.html, assets, logos) ko wildcard ke andar copy karo
+          find ./genaievent/build -maxdepth 1 -type f -exec cp {} ./genaievent/build/wildcard/ \;
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
